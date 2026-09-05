@@ -47,9 +47,21 @@
       border-radius: 4px;
       cursor: pointer;
       width: 100%;
+      margin-bottom: 0.5rem;
     }
     button:hover {
       background-color: #0056b3;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    #reset-btn {
+      background-color: #6c757d;
+      display: none;
+    }
+    #reset-btn:hover {
+      background-color: #5a6268;
     }
     #image-container {
       margin-top: 1.5rem;
@@ -61,7 +73,7 @@
       display: none;
       margin-top: 1rem;
     }
-    #loading-text {
+    #status-text {
       display: none;
       font-weight: bold;
       color: #555;
@@ -87,11 +99,12 @@
         <option value="white">White</option>
       </select>
 
-      <button type="submit">Submit</button>
+      <button type="submit" id="submit-btn">Submit</button>
+      <button type="button" id="reset-btn">Start Again</button>
     </form>
 
     <div id="image-container">
-      <p id="loading-text">Hold onto your panty...</p>
+      <p id="status-text"></p>
       <img id="kermit-img" src="" alt="Custom Colored Kermit">
     </div>
   </div>
@@ -99,33 +112,58 @@
   <script>
     const form = document.getElementById('color-form');
     const colorSelect = document.getElementById('color-select');
+    const submitBtn = document.getElementById('submit-btn');
+    const resetBtn = document.getElementById('reset-btn');
     const kermitImg = document.getElementById('kermit-img');
-    const loadingText = document.getElementById('loading-text');
+    const statusText = document.getElementById('status-text');
 
     form.addEventListener('submit', function(event) {
-      event.preventDefault(); // Stop page from refreshing
+      event.preventDefault();
 
       const selectedColor = colorSelect.value;
       if (!selectedColor) return;
 
-      // Show loading text and hide old image
-      loadingText.style.display = 'block';
+      // Disable inputs and update UI state
+      submitBtn.disabled = true;
+      colorSelect.disabled = true;
+      statusText.textContent = 'Hold onto your panty...';
+      statusText.style.display = 'block';
+      statusText.style.color = '#555';
       kermitImg.style.display = 'none';
 
-      // Build image URL using Pollinations
+      // Build API request
       const prompt = encodeURIComponent(`Generate an image of Kermit the Frog with ${selectedColor} color skin`);
-      // Adding a dynamic seed prevents browser caching so you can regenerate colors
-      const seed = Math.floor(Math.random() * 10000);
-      const imageUrl = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&nologo=true`;
+      const seed = Math.floor(Math.random() * 100000);
+      
+      // Clear previous src to trigger a clean load event
+      kermitImg.src = '';
+      kermitImg.src = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&nologo=true`;
 
-      // Assign URL to image element
-      kermitImg.src = imageUrl;
-
-      // Show image once it finishes downloading
       kermitImg.onload = function() {
-        loadingText.style.display = 'none';
+        statusText.style.display = 'none';
         kermitImg.style.display = 'block';
+        resetBtn.style.display = 'block'; // Show reset button once loaded
+        submitBtn.disabled = false;
       };
+
+      kermitImg.onerror = function() {
+        statusText.textContent = 'Failed to generate image. Please try again.';
+        statusText.style.color = 'red';
+        submitBtn.disabled = false;
+        colorSelect.disabled = false;
+        resetBtn.style.display = 'block';
+      };
+    });
+
+    // Reset button logic
+    resetBtn.addEventListener('click', function() {
+      form.reset();
+      kermitImg.src = '';
+      kermitImg.style.display = 'none';
+      statusText.style.display = 'none';
+      resetBtn.style.display = 'none';
+      submitBtn.disabled = false;
+      colorSelect.disabled = false;
     });
   </script>
 
