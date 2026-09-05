@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Favorite Color</title>
+  <title>Favorite Color Kermit</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
       background-color: #f4f4f9;
+      padding: 1rem;
     }
     .container {
       background: #ffffff;
@@ -20,6 +21,8 @@
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       text-align: center;
+      max-width: 400px;
+      width: 100%;
     }
     label {
       font-size: 1.2rem;
@@ -43,19 +46,35 @@
       font-size: 1rem;
       border-radius: 4px;
       cursor: pointer;
+      width: 100%;
     }
     button:hover {
       background-color: #0056b3;
+    }
+    #image-container {
+      margin-top: 1.5rem;
+    }
+    #kermit-img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      display: none;
+      margin-top: 1rem;
+    }
+    #loading-text {
+      display: none;
+      font-weight: bold;
+      color: #555;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <form>
+    <form id="color-form">
       <label for="color-select">What is your favourite colour?</label>
       
-      <select id="color-select" name="favorite-color">
+      <select id="color-select" name="favorite-color" required>
         <option value="" disabled selected>Select a color...</option>
         <option value="red">Red</option>
         <option value="blue">Blue</option>
@@ -70,7 +89,45 @@
 
       <button type="submit">Submit</button>
     </form>
+
+    <div id="image-container">
+      <p id="loading-text">Generating your custom Kermit...</p>
+      <img id="kermit-img" src="" alt="Custom Colored Kermit">
+    </div>
   </div>
+
+  <script>
+    const form = document.getElementById('color-form');
+    const colorSelect = document.getElementById('color-select');
+    const kermitImg = document.getElementById('kermit-img');
+    const loadingText = document.getElementById('loading-text');
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault(); // Stop page from refreshing
+
+      const selectedColor = colorSelect.value;
+      if (!selectedColor) return;
+
+      // Show loading text and hide old image
+      loadingText.style.display = 'block';
+      kermitImg.style.display = 'none';
+
+      // Build image URL using Pollinations
+      const prompt = encodeURIComponent(`A high quality photo of Kermit the Frog in a bright ${selectedColor} color scheme`);
+      // Adding a dynamic seed prevents browser caching so you can regenerate colors
+      const seed = Math.floor(Math.random() * 10000);
+      const imageUrl = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&nologo=true`;
+
+      // Assign URL to image element
+      kermitImg.src = imageUrl;
+
+      // Show image once it finishes downloading
+      kermitImg.onload = function() {
+        loadingText.style.display = 'none';
+        kermitImg.style.display = 'block';
+      };
+    });
+  </script>
 
 </body>
 </html>
