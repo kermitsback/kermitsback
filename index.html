@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Favorite Color Kermit</title>
+  <title>He's Back!</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -91,7 +91,7 @@
     </form>
 
     <div id="image-container">
-      <p id="loading-text">Generating your custom Kermit...</p>
+      <p id="loading-text">Hold onto your panty...</p>
       <img id="kermit-img" src="" alt="Custom Colored Kermit">
     </div>
   </div>
@@ -113,7 +113,7 @@
       kermitImg.style.display = 'none';
 
       // Build image URL using Pollinations
-      const prompt = encodeURIComponent(`A high quality photo of Kermit the Frog in a bright ${selectedColor} color scheme`);
+      const prompt = encodeURIComponent(`Generate an image of Kermit the Frog with ${selectedColor} color skin`);
       // Adding a dynamic seed prevents browser caching so you can regenerate colors
       const seed = Math.floor(Math.random() * 10000);
       const imageUrl = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&nologo=true`;
