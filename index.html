@@ -25,18 +25,20 @@
       width: 100%;
     }
     label {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: bold;
       display: block;
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
+      text-align: left;
     }
     select {
       width: 100%;
       padding: 0.5rem;
       font-size: 1rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.2rem;
       border: 1px solid #ccc;
       border-radius: 4px;
+      box-sizing: border-box;
     }
     button {
       background-color: #007bff;
@@ -84,8 +86,8 @@
 
   <div class="container">
     <form id="color-form">
+      <!-- Question 1: Color -->
       <label for="color-select">What is your favourite colour?</label>
-      
       <select id="color-select" name="favorite-color" required>
         <option value="" disabled selected>Select a color...</option>
         <option value="red">Red</option>
@@ -97,6 +99,16 @@
         <option value="pink">Pink</option>
         <option value="black">Black</option>
         <option value="white">White</option>
+      </select>
+
+      <!-- Question 2: Decade -->
+      <label for="decade-select">What's your favourite decade?</label>
+      <select id="decade-select" name="favorite-decade" required>
+        <option value="" disabled selected>Select a decade...</option>
+        <option value="60s">60s</option>
+        <option value="70s">70s</option>
+        <option value="80s">80s</option>
+        <option value="90s">90s</option>
       </select>
 
       <button type="submit" id="submit-btn">Submit</button>
@@ -112,37 +124,61 @@
   <script>
     const form = document.getElementById('color-form');
     const colorSelect = document.getElementById('color-select');
+    const decadeSelect = document.getElementById('decade-select');
     const submitBtn = document.getElementById('submit-btn');
     const resetBtn = document.getElementById('reset-btn');
     const kermitImg = document.getElementById('kermit-img');
     const statusText = document.getElementById('status-text');
 
+    // Function to map the decade to the corresponding accessory/style
+    function getDecadeFeature(decade) {
+      switch (decade) {
+        case '60s':
+          return 'wearing a hippie headband';
+        case '70s':
+          return 'with a big 1970s rock and roll hairstyle';
+        case '80s':
+          return 'with an 80s mullet haircut';
+        case '90s':
+          return 'with red spiky hair and a goatee beard';
+        default:
+          return '';
+      }
+    }
+
     form.addEventListener('submit', function(event) {
       event.preventDefault();
 
       const selectedColor = colorSelect.value;
-      if (!selectedColor) return;
+      const selectedDecade = decadeSelect.value;
+      
+      if (!selectedColor || !selectedDecade) return;
+
+      // Get the specific decade feature string
+      const decadeFeature = getDecadeFeature(selectedDecade);
 
       // Disable inputs and update UI state
       submitBtn.disabled = true;
       colorSelect.disabled = true;
+      decadeSelect.disabled = true;
       statusText.textContent = 'Hold onto your panty...';
       statusText.style.display = 'block';
       statusText.style.color = '#555';
       kermitImg.style.display = 'none';
 
-      // Build API request
-      const prompt = encodeURIComponent(`Generate an image of Kermit the Frog with ${selectedColor} color skin`);
+      // Build the prompt dynamically
+      const promptText = `Generate an image of Kermit the Frog with ${selectedColor} color skin, ${decadeFeature}`;
+      const prompt = encodeURIComponent(promptText);
       const seed = Math.floor(Math.random() * 100000);
       
-      // Clear previous src to trigger a clean load event
+      // Request using turbo model for speed
       kermitImg.src = '';
-      kermitImg.src = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&nologo=true`;
+      kermitImg.src = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&model=turbo&nologo=true`;
 
       kermitImg.onload = function() {
         statusText.style.display = 'none';
         kermitImg.style.display = 'block';
-        resetBtn.style.display = 'block'; // Show reset button once loaded
+        resetBtn.style.display = 'block';
         submitBtn.disabled = false;
       };
 
@@ -151,6 +187,7 @@
         statusText.style.color = 'red';
         submitBtn.disabled = false;
         colorSelect.disabled = false;
+        decadeSelect.disabled = false;
         resetBtn.style.display = 'block';
       };
     });
@@ -164,6 +201,7 @@
       resetBtn.style.display = 'none';
       submitBtn.disabled = false;
       colorSelect.disabled = false;
+      decadeSelect.disabled = false;
     });
   </script>
 
