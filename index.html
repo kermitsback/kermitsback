@@ -80,6 +80,17 @@
       font-weight: bold;
       color: #555;
     }
+    #bio-text {
+      display: none;
+      margin-top: 1rem;
+      font-style: italic;
+      color: #333;
+      background: #f8f9fa;
+      padding: 0.8rem;
+      border-left: 4px solid #007bff;
+      border-radius: 4px;
+      text-align: left;
+    }
   </style>
 </head>
 <body>
@@ -111,6 +122,18 @@
         <option value="90s">90s</option>
       </select>
 
+      <!-- Question 3: World King Decree -->
+      <label for="decree-select">If you were "World King", what would be your first decree?</label>
+      <select id="decree-select" name="world-decree" required>
+        <option value="" disabled selected>Select a decree...</option>
+        <option value="invade-greenland">Invade Greenland</option>
+        <option value="legalize-drugs">Legalize All Drugs</option>
+        <option value="intelligent-reproduce">Only Let Medically 'Intelligent' People Reproduce</option>
+        <option value="abolish-monarchy">Abdicate and Abolish the Monarchy</option>
+        <option value="illuminati-steel-pan">Take Down the Illuminati with a Steel Pan</option>
+        <option value="simply-exist">Nothing. Simply Exist</option>
+      </select>
+
       <button type="submit" id="submit-btn">Submit</button>
       <button type="button" id="reset-btn">Start Again</button>
     </form>
@@ -118,6 +141,7 @@
     <div id="image-container">
       <p id="status-text"></p>
       <img id="kermit-img" src="" alt="Custom Colored Kermit">
+      <p id="bio-text"></p>
     </div>
   </div>
 
@@ -125,10 +149,12 @@
     const form = document.getElementById('color-form');
     const colorSelect = document.getElementById('color-select');
     const decadeSelect = document.getElementById('decade-select');
+    const decreeSelect = document.getElementById('decree-select');
     const submitBtn = document.getElementById('submit-btn');
     const resetBtn = document.getElementById('reset-btn');
     const kermitImg = document.getElementById('kermit-img');
     const statusText = document.getElementById('status-text');
+    const bioText = document.getElementById('bio-text');
 
     // Function to map the decade to the corresponding accessory/style
     function getDecadeFeature(decade) {
@@ -151,8 +177,9 @@
 
       const selectedColor = colorSelect.value;
       const selectedDecade = decadeSelect.value;
+      const selectedDecree = decreeSelect.value;
       
-      if (!selectedColor || !selectedDecade) return;
+      if (!selectedColor || !selectedDecade || !selectedDecree) return;
 
       // Get the specific decade feature string
       const decadeFeature = getDecadeFeature(selectedDecade);
@@ -161,10 +188,12 @@
       submitBtn.disabled = true;
       colorSelect.disabled = true;
       decadeSelect.disabled = true;
+      decreeSelect.disabled = true;
       statusText.textContent = 'Hold onto your panty...';
       statusText.style.display = 'block';
       statusText.style.color = '#555';
       kermitImg.style.display = 'none';
+      bioText.style.display = 'none';
 
       // Build the prompt dynamically
       const promptText = `Generate an image of Kermit the Frog with ${selectedColor} color skin, ${decadeFeature}`;
@@ -178,6 +207,11 @@
       kermitImg.onload = function() {
         statusText.style.display = 'none';
         kermitImg.style.display = 'block';
+        
+        // Pass the prompt/decree string here when you hook up your AI logic later
+        bioText.textContent = `Decree Selected: ${selectedDecree}`;
+        bioText.style.display = 'block';
+
         resetBtn.style.display = 'block';
         submitBtn.disabled = false;
       };
@@ -188,6 +222,7 @@
         submitBtn.disabled = false;
         colorSelect.disabled = false;
         decadeSelect.disabled = false;
+        decreeSelect.disabled = false;
         resetBtn.style.display = 'block';
       };
     });
@@ -197,11 +232,13 @@
       form.reset();
       kermitImg.src = '';
       kermitImg.style.display = 'none';
+      bioText.style.display = 'none';
       statusText.style.display = 'none';
       resetBtn.style.display = 'none';
       submitBtn.disabled = false;
       colorSelect.disabled = false;
       decadeSelect.disabled = false;
+      decreeSelect.disabled = false;
     });
   </script>
 
