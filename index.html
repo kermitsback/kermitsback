@@ -155,7 +155,6 @@
   const resetBtn = document.getElementById('reset-btn');
   const kermitImg = document.getElementById('kermit-img');
   const statusText = document.getElementById('status-text');
-  const bioText = document.getElementById('bio-text');
 
   function getDecadeFeature(decade) {
     switch (decade) {
@@ -167,16 +166,36 @@
     }
   }
 
-  form.addEventListener('submit', async function(event) {
+  function getDecreeFeature(decreeValue) {
+    switch (decreeValue) {
+      case 'invade-greenland': 
+        return 'wearing royal king armor and holding a flag on a snowy arctic glacier in Greenland';
+      case 'legalize-drugs': 
+        return 'wearing a royal golden crown surrounded by psychedelic swirling colors and floating mushrooms';
+      case 'intelligent-reproduce': 
+        return 'wearing a royal crown and lab coat, holding a glowing clipboard in a high-tech lab';
+      case 'abolish-monarchy': 
+        return 'wearing a golden crown while sitting on a throne that is crumbling into dust';
+      case 'illuminati-steel-pan': 
+        return 'wearing a king robe and playing a glowing steel pan drum, mystically defeating mysterious hooded figures';
+      case 'simply-exist': 
+        return 'wearing a royal king crown, sitting peacefully in lotus position floating in deep space';
+      default: 
+        return 'wearing a royal king crown';
+    }
+  }
+
+  form.addEventListener('submit', function(event) {
     event.preventDefault();
 
     const selectedColor = colorSelect.value;
     const selectedDecade = decadeSelect.value;
-    const selectedDecreeText = decreeSelect.options[decreeSelect.selectedIndex].text;
+    const selectedDecree = decreeSelect.value;
     
-    if (!selectedColor || !selectedDecade || !decreeSelect.value) return;
+    if (!selectedColor || !selectedDecade || !selectedDecree) return;
 
     const decadeFeature = getDecadeFeature(selectedDecade);
+    const decreeFeature = getDecreeFeature(selectedDecree);
 
     // Disable controls & reset view
     submitBtn.disabled = true;
@@ -187,57 +206,22 @@
     statusText.style.display = 'block';
     statusText.style.color = '#555';
     kermitImg.style.display = 'none';
-    bioText.style.display = 'none';
 
-    // Build IMAGE prompt
-    const promptText = `Generate an image of Kermit the Frog with ${selectedColor} color skin, ${decadeFeature}`;
+    // Construct unified visual image prompt
+    const promptText = `A detailed photograph of Kermit the Frog with ${selectedColor} color skin, ${decadeFeature}, ${decreeFeature}`;
     const prompt = encodeURIComponent(promptText);
     const seed = Math.floor(Math.random() * 100000);
 
-    // Load Image
+    // Fetch Image using turbo model
     kermitImg.src = '';
     kermitImg.src = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&model=turbo&nologo=true`;
 
-   kermitImg.onload = async function() {
-  kermitImg.style.display = 'block';
-  statusText.textContent = 'Generating surreal creator lore...';
-  statusText.style.display = 'block';
-
-  // Construct a clean, natural prompt
-  const aiPrompt = `Write a deeply surreal, weird, and hilarious short story (under 40 words) about a ${selectedColor}-skinned Kermit the Frog from the ${selectedDecade} who became World King and decreed to ${selectedDecreeText}.`;
-
-  try {
-    // Calling Pollinations text endpoint via POST with a random seed
-    const textSeed = Math.floor(Math.random() * 999999);
-    const response = await fetch("https://text.pollinations.ai/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: [
-          { role: "system", content: "You are a surreal, bizarre fiction writer." },
-          { role: "user", content: aiPrompt }
-        ],
-        seed: textSeed,
-        model: "mistral"
-      })
-    });
-
-    if (!response.ok) throw new Error("API Error");
-
-    const story = await response.text();
-
-    statusText.style.display = 'none';
-    bioText.textContent = story.trim();
-    bioText.style.display = 'block';
-
-  } catch (err) {
-    statusText.textContent = 'Image loaded, but story generation timed out.';
-    statusText.style.color = '#888';
-  }
-
-  resetBtn.style.display = 'block';
-  submitBtn.disabled = false;
-};
+    kermitImg.onload = function() {
+      statusText.style.display = 'none';
+      kermitImg.style.display = 'block';
+      resetBtn.style.display = 'block';
+      submitBtn.disabled = false;
+    };
 
     kermitImg.onerror = function() {
       statusText.textContent = 'Failed to generate image. Please try again.';
@@ -254,7 +238,6 @@
     form.reset();
     kermitImg.src = '';
     kermitImg.style.display = 'none';
-    bioText.style.display = 'none';
     statusText.style.display = 'none';
     resetBtn.style.display = 'none';
     submitBtn.disabled = false;
@@ -263,6 +246,5 @@
     decreeSelect.disabled = false;
   });
 </script>
-
 </body>
 </html>
