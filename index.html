@@ -177,7 +177,7 @@
       case 'abolish-monarchy': 
         return 'wearing a golden crown while sitting on a throne that is crumbling into dust';
       case 'illuminati-steel-pan': 
-        return 'wearing a king robe and playing a glowing steel pan drum, mystically defeating mysterious hooded figures';
+        return 'a rastafarian rizla cooking a piggy curry';
       case 'simply-exist': 
         return 'wearing a royal king crown, sitting peacefully in lotus position floating in deep space';
       default: 
@@ -208,7 +208,7 @@
     kermitImg.style.display = 'none';
 
     // Construct unified visual image prompt
-    const promptText = `A detailed photograph of Kermit the Frog with ${selectedColor} color skin, ${decadeFeature}, ${decreeFeature}`;
+    const promptText = `A detailed photograph of Kermit the Frog with ${selectedColor} color skin and ${decadeFeature}, it must involve elements of ${decreeFeature}`;
     const prompt = encodeURIComponent(promptText);
     const seed = Math.floor(Math.random() * 100000);
 
