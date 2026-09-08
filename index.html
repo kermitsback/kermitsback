@@ -90,6 +90,7 @@
       border-left: 4px solid #007bff;
       border-radius: 4px;
       text-align: left;
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -156,19 +157,13 @@
     const statusText = document.getElementById('status-text');
     const bioText = document.getElementById('bio-text');
 
-    // Function to map the decade to the corresponding accessory/style
     function getDecadeFeature(decade) {
       switch (decade) {
-        case '60s':
-          return 'wearing a hippy headband';
-        case '70s':
-          return 'with a big 1970s rock and roll hairstyle';
-        case '80s':
-          return 'with an 80s mullet haircut';
-        case '90s':
-          return 'with a baseball cap and jacket';
-        default:
-          return '';
+        case '60s': return 'wearing a hippy headband';
+        case '70s': return 'with a big 1970s rock and roll hairstyle';
+        case '80s': return 'with an 80s mullet haircut';
+        case '90s': return 'with a baseball cap and jacket';
+        default: return '';
       }
     }
 
@@ -177,14 +172,12 @@
 
       const selectedColor = colorSelect.value;
       const selectedDecade = decadeSelect.value;
-      const selectedDecree = decreeSelect.value;
+      const selectedDecreeText = decreeSelect.options[decreeSelect.selectedIndex].text;
       
-      if (!selectedColor || !selectedDecade || !selectedDecree) return;
+      if (!selectedColor || !selectedDecade || !decreeSelect.value) return;
 
-      // Get the specific decade feature string
       const decadeFeature = getDecadeFeature(selectedDecade);
 
-      // Disable inputs and update UI state
       submitBtn.disabled = true;
       colorSelect.disabled = true;
       decadeSelect.disabled = true;
@@ -195,28 +188,26 @@
       kermitImg.style.display = 'none';
       bioText.style.display = 'none';
 
-      // Build the IMAGE prompt dynamically
+      // Build IMAGE prompt
       const promptText = `Generate an image of Kermit the Frog with ${selectedColor} color skin, ${decadeFeature}`;
       const prompt = encodeURIComponent(promptText);
       const seed = Math.floor(Math.random() * 100000);
 
-      // Build the TEXT story prompt dynamically for your AI pipeline
-      const aiPromptText = `Write a deeply surreal paragraph about Kermit the Frog becoming World King, whose very first decree was to: "${selectedDecree}".`;
+      // Build TEXT prompt using the full option text
+      const aiPromptText = `Write a deeply surreal paragraph about Kermit the Frog becoming World King, whose very first decree was to: "${selectedDecreeText}".`;
       
-      // Request using turbo model for speed
+      // Request image
       kermitImg.src = '';
       kermitImg.src = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&model=turbo&nologo=true`;
 
+      // Trigger text fetch AFTER image loads
       kermitImg.onload = async function() {
-        // Show image immediately once loaded
         kermitImg.style.display = 'block';
-        
         statusText.textContent = 'Generating creator lore...';
         statusText.style.display = 'block';
         bioText.textContent = '';
 
         try {
-          // Send the aiPromptText variable to the text generation API
           const textUrl = `https://text.pollinations.ai/${encodeURIComponent(aiPromptText)}`;
           const response = await fetch(textUrl);
           const storyData = await response.text();
@@ -226,17 +217,9 @@
           bioText.style.display = 'block';
         } catch (err) {
           statusText.style.display = 'none';
-          bioText.textContent = 'Failed to generate story.';
+          bioText.textContent = `World King Kermit issued his decree: "${selectedDecreeText}".`;
           bioText.style.display = 'block';
         }
-
-        resetBtn.style.display = 'block';
-        submitBtn.disabled = false;
-      };
-        
-        // Pass the prompt/decree string here when you hook up your AI logic later
-        bioText.textContent = `Decree Selected: ${selectedDecree}`;
-        bioText.style.display = 'block';
 
         resetBtn.style.display = 'block';
         submitBtn.disabled = false;
@@ -253,7 +236,6 @@
       };
     });
 
-    // Reset button logic
     resetBtn.addEventListener('click', function() {
       form.reset();
       kermitImg.src = '';
