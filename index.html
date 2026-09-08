@@ -146,139 +146,117 @@
     </div>
   </div>
 
-  <script>
-    const form = document.getElementById('color-form');
-    const colorSelect = document.getElementById('color-select');
-    const decadeSelect = document.getElementById('decade-select');
-    const decreeSelect = document.getElementById('decree-select');
-    const submitBtn = document.getElementById('submit-btn');
-    const resetBtn = document.getElementById('reset-btn');
-    const kermitImg = document.getElementById('kermit-img');
-    const statusText = document.getElementById('status-text');
-    const bioText = document.getElementById('bio-text');
+ <script>
+  const form = document.getElementById('color-form');
+  const colorSelect = document.getElementById('color-select');
+  const decadeSelect = document.getElementById('decade-select');
+  const decreeSelect = document.getElementById('decree-select');
+  const submitBtn = document.getElementById('submit-btn');
+  const resetBtn = document.getElementById('reset-btn');
+  const kermitImg = document.getElementById('kermit-img');
+  const statusText = document.getElementById('status-text');
+  const bioText = document.getElementById('bio-text');
 
-    function getDecadeFeature(decade) {
-      switch (decade) {
-        case '60s': return 'wearing a hippy headband';
-        case '70s': return 'with a big 1970s rock and roll hairstyle';
-        case '80s': return 'with an 80s mullet haircut';
-        case '90s': return 'with a baseball cap and jacket';
-        default: return '';
-      }
+  function getDecadeFeature(decade) {
+    switch (decade) {
+      case '60s': return 'wearing a hippy headband';
+      case '70s': return 'with a big 1970s rock and roll hairstyle';
+      case '80s': return 'with an 80s mullet haircut';
+      case '90s': return 'with a baseball cap and jacket';
+      default: return '';
     }
+  }
 
-    form.addEventListener('submit', function(event) {
-      event.preventDefault();
+  form.addEventListener('submit', async function(event) {
+    event.preventDefault();
 
-      const selectedColor = colorSelect.value;
-      const selectedDecade = decadeSelect.value;
-      const selectedDecreeText = decreeSelect.options[decreeSelect.selectedIndex].text;
-      
-      if (!selectedColor || !selectedDecade || !decreeSelect.value) return;
+    const selectedColor = colorSelect.value;
+    const selectedDecade = decadeSelect.value;
+    const selectedDecreeText = decreeSelect.options[decreeSelect.selectedIndex].text;
+    
+    if (!selectedColor || !selectedDecade || !decreeSelect.value) return;
 
-      const decadeFeature = getDecadeFeature(selectedDecade);
+    const decadeFeature = getDecadeFeature(selectedDecade);
 
-      submitBtn.disabled = true;
-      colorSelect.disabled = true;
-      decadeSelect.disabled = true;
-      decreeSelect.disabled = true;
-      statusText.textContent = 'Hold onto your panty...';
-      statusText.style.display = 'block';
-      statusText.style.color = '#555';
-      kermitImg.style.display = 'none';
-      bioText.style.display = 'none';
+    // Disable controls & reset view
+    submitBtn.disabled = true;
+    colorSelect.disabled = true;
+    decadeSelect.disabled = true;
+    decreeSelect.disabled = true;
+    statusText.textContent = 'Hold onto your panty...';
+    statusText.style.display = 'block';
+    statusText.style.color = '#555';
+    kermitImg.style.display = 'none';
+    bioText.style.display = 'none';
 
-      // Build IMAGE prompt
-      const promptText = `Generate an image of Kermit the Frog with ${selectedColor} color skin, ${decadeFeature}`;
-      const prompt = encodeURIComponent(promptText);
-      const seed = Math.floor(Math.random() * 100000);
+    // Build IMAGE prompt
+    const promptText = `Generate an image of Kermit the Frog with ${selectedColor} color skin, ${decadeFeature}`;
+    const prompt = encodeURIComponent(promptText);
+    const seed = Math.floor(Math.random() * 100000);
 
-      // Request Image
-      kermitImg.src = '';
-      kermitImg.src = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&model=turbo&nologo=true`;
+    // Load Image
+    kermitImg.src = '';
+    kermitImg.src = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&model=turbo&nologo=true`;
 
-      // Trigger Text Generation once image is loaded
-      kermitImg.onload = async function() {
-        kermitImg.style.display = 'block';
-        statusText.textContent = 'Generating surreal creator lore...';
-        statusText.style.display = 'block';
-        bioText.textContent = '';
+    kermitImg.onload = async function() {
+      kermitImg.style.display = 'block';
+      statusText.textContent = 'Generating surreal creator lore...';
 
-        const aiPrompt = `Write a deeply surreal, weird, short paragraph about Kermit the Frog becoming World King, whose first decree was to: "${selectedDecreeText}". Keep it under 40 words.`;
+      // Dynamic text prompt using all 3 inputs + a random seed for unique stories
+      const aiPromptText = `Write a deeply surreal, weird, short story (under 35 words) about a ${selectedColor}-skinned Kermit the Frog from the ${selectedDecade} who became World King and decreed to: "${selectedDecreeText}".`;
+      const encodedTextPrompt = encodeURIComponent(aiPromptText);
+      const textSeed = Math.floor(Math.random() * 999999);
 
-        try {
-          // Open serverless endpoint (No API Key Required, No CORS Block, Pure Text Output)
-          const response = await fetch("https://backend.buildt.ai/api/generate-story", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: aiPrompt })
-          });
+      try {
+        // Direct, reliable, free text generation via Pollinations GET API
+        const textResponse = await fetch(`https://text.pollinations.ai/${encodedTextPrompt}?seed=${textSeed}&model=mistral`);
+        
+        if (!textResponse.ok) throw new Error("Text API failed");
+        
+        const story = await textResponse.text();
 
-          if (!response.ok) throw new Error("Primary API failed");
-          const data = await response.json();
-          
-          statusText.style.display = 'none';
-          bioText.textContent = data.story;
-          bioText.style.display = 'block';
+        statusText.style.display = 'none';
+        bioText.textContent = story.trim();
+        bioText.style.display = 'block';
 
-        } catch (err) {
-          // Direct fallback using client-side open router fetch
-          try {
-            const fallbackRes = await fetch("https://text.pollinations.ai/", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                messages: [{ role: "user", content: aiPrompt }],
-                model: "mistral"
-              })
-            });
-            
-            const fallbackText = await fallbackRes.text();
-            
-            // Check if returned error JSON instead of story text
-            if (fallbackText.includes("402 Payment Required") || fallbackText.includes("error")) {
-              throw new Error("API throttled");
-            }
+      } catch (err) {
+        // Fallback generator with randomized template variations
+        statusText.style.display = 'none';
+        const actions = ["dissolved into glittering tea", "warped local gravity", "summoned a council of felt elders", "broadcast banjo frequency waves worldwide"];
+        const randomAction = actions[Math.floor(Math.random() * actions.length)];
+        
+        bioText.textContent = `In a haze of ${selectedColor} light, World King Kermit of the ${selectedDecade} decreed to ${selectedDecreeText.toLowerCase()}. As the decree passed, reality fractured and he ${randomAction}.`;
+        bioText.style.display = 'block';
+      }
 
-            statusText.style.display = 'none';
-            bioText.textContent = fallbackText;
-            bioText.style.display = 'block';
-          } catch (e) {
-            // Guarantee a surreal generated paragraph formatted dynamically if all networks block
-            statusText.style.display = 'none';
-            bioText.textContent = `The sky turned purple as World King Kermit adjusted his crown and announced his decree to ${selectedDecreeText.toLowerCase()}. Millions of felt frogs wept tears of sparkling tea as gravity briefly inverted.`;
-            bioText.style.display = 'block';
-          }
-        }
+      resetBtn.style.display = 'block';
+      submitBtn.disabled = false;
+    };
 
-        resetBtn.style.display = 'block';
-        submitBtn.disabled = false;
-      };
-
-      kermitImg.onerror = function() {
-        statusText.textContent = 'Failed to generate image. Please try again.';
-        statusText.style.color = 'red';
-        submitBtn.disabled = false;
-        colorSelect.disabled = false;
-        decadeSelect.disabled = false;
-        decreeSelect.disabled = false;
-        resetBtn.style.display = 'block';
-      };
-    });
-
-    resetBtn.addEventListener('click', function() {
-      form.reset();
-      kermitImg.src = '';
-      kermitImg.style.display = 'none';
-      bioText.style.display = 'none';
-      statusText.style.display = 'none';
-      resetBtn.style.display = 'none';
+    kermitImg.onerror = function() {
+      statusText.textContent = 'Failed to generate image. Please try again.';
+      statusText.style.color = 'red';
       submitBtn.disabled = false;
       colorSelect.disabled = false;
       decadeSelect.disabled = false;
       decreeSelect.disabled = false;
-    });
-  </script>
+      resetBtn.style.display = 'block';
+    };
+  });
+
+  resetBtn.addEventListener('click', function() {
+    form.reset();
+    kermitImg.src = '';
+    kermitImg.style.display = 'none';
+    bioText.style.display = 'none';
+    statusText.style.display = 'none';
+    resetBtn.style.display = 'none';
+    submitBtn.disabled = false;
+    colorSelect.disabled = false;
+    decadeSelect.disabled = false;
+    decreeSelect.disabled = false;
+  });
+</script>
 
 </body>
 </html>
