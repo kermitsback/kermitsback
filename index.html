@@ -207,9 +207,32 @@
       kermitImg.src = '';
       kermitImg.src = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&model=turbo&nologo=true`;
 
-      kermitImg.onload = function() {
-        statusText.style.display = 'none';
+      kermitImg.onload = async function() {
+        // Show image immediately once loaded
         kermitImg.style.display = 'block';
+        
+        statusText.textContent = 'Generating creator lore...';
+        statusText.style.display = 'block';
+        bioText.textContent = '';
+
+        try {
+          // Send the aiPromptText variable to the text generation API
+          const textUrl = `https://text.pollinations.ai/${encodeURIComponent(aiPromptText)}`;
+          const response = await fetch(textUrl);
+          const storyData = await response.text();
+
+          statusText.style.display = 'none';
+          bioText.textContent = storyData;
+          bioText.style.display = 'block';
+        } catch (err) {
+          statusText.style.display = 'none';
+          bioText.textContent = 'Failed to generate story.';
+          bioText.style.display = 'block';
+        }
+
+        resetBtn.style.display = 'block';
+        submitBtn.disabled = false;
+      };
         
         // Pass the prompt/decree string here when you hook up your AI logic later
         bioText.textContent = `Decree Selected: ${selectedDecree}`;
