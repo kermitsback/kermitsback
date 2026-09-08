@@ -198,40 +198,46 @@
     kermitImg.src = '';
     kermitImg.src = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&model=turbo&nologo=true`;
 
-    kermitImg.onload = async function() {
-      kermitImg.style.display = 'block';
-      statusText.textContent = 'Generating surreal creator lore...';
+   kermitImg.onload = async function() {
+  kermitImg.style.display = 'block';
+  statusText.textContent = 'Generating surreal creator lore...';
+  statusText.style.display = 'block';
 
-      // Dynamic text prompt using all 3 inputs + a random seed for unique stories
-      const aiPromptText = `Write a senseless biography (around a paragraph long) about a ${selectedColor}-skinned Kermit the Frog. It must thematically involve "${selectedDecreeText}".`;
-      const encodedTextPrompt = encodeURIComponent(aiPromptText);
-      const textSeed = Math.floor(Math.random() * 999999);
+  // Construct a clean, natural prompt
+  const aiPrompt = `Write a deeply surreal, weird, and hilarious short story (under 40 words) about a ${selectedColor}-skinned Kermit the Frog from the ${selectedDecade} who became World King and decreed to ${selectedDecreeText}.`;
 
-      try {
-        // Direct, reliable, free text generation via Pollinations GET API
-        const textResponse = await fetch(`https://text.pollinations.ai/${encodedTextPrompt}?seed=${textSeed}&model=mistral`);
-        
-        if (!textResponse.ok) throw new Error("Text API failed");
-        
-        const story = await textResponse.text();
+  try {
+    // Calling Pollinations text endpoint via POST with a random seed
+    const textSeed = Math.floor(Math.random() * 999999);
+    const response = await fetch("https://text.pollinations.ai/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: "You are a surreal, bizarre fiction writer." },
+          { role: "user", content: aiPrompt }
+        ],
+        seed: textSeed,
+        model: "mistral"
+      })
+    });
 
-        statusText.style.display = 'none';
-        bioText.textContent = story.trim();
-        bioText.style.display = 'block';
+    if (!response.ok) throw new Error("API Error");
 
-      } catch (err) {
-        // Fallback generator with randomized template variations
-        statusText.style.display = 'none';
-        const actions = ["dissolved into glittering tea", "warped local gravity", "summoned a council of felt elders", "broadcast banjo frequency waves worldwide"];
-        const randomAction = actions[Math.floor(Math.random() * actions.length)];
-        
-        bioText.textContent = `In a haze of ${selectedColor} light, World King Kermit of the ${selectedDecade} decreed to ${selectedDecreeText.toLowerCase()}. As the decree passed, reality fractured and he ${randomAction}.`;
-        bioText.style.display = 'block';
-      }
+    const story = await response.text();
 
-      resetBtn.style.display = 'block';
-      submitBtn.disabled = false;
-    };
+    statusText.style.display = 'none';
+    bioText.textContent = story.trim();
+    bioText.style.display = 'block';
+
+  } catch (err) {
+    statusText.textContent = 'Image loaded, but story generation timed out.';
+    statusText.style.color = '#888';
+  }
+
+  resetBtn.style.display = 'block';
+  submitBtn.disabled = false;
+};
 
     kermitImg.onerror = function() {
       statusText.textContent = 'Failed to generate image. Please try again.';
