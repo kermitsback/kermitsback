@@ -146,7 +146,7 @@
     </div>
   </div>
 
-  <script>
+ <script>
     const form = document.getElementById('color-form');
     const colorSelect = document.getElementById('color-select');
     const decadeSelect = document.getElementById('decade-select');
@@ -193,32 +193,60 @@
       const prompt = encodeURIComponent(promptText);
       const seed = Math.floor(Math.random() * 100000);
 
-      // Build TEXT prompt using the full option text
-      const aiPromptText = `Write a deeply surreal paragraph about Kermit the Frog becoming World King, whose very first decree was to: "${selectedDecreeText}".`;
+      // Build DYNAMIC TEXT prompt for AI pipeline
+      const aiPromptText = `Write a deeply surreal, bizarre, short paragraph about Kermit the Frog becoming World King, whose very first decree was to: "${selectedDecreeText}". Do not repeat the prompt.`;
       
       // Request image
       kermitImg.src = '';
       kermitImg.src = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&model=turbo&nologo=true`;
 
-      // Trigger text fetch AFTER image loads
+      // Trigger dynamic AI text generation AFTER image loads
       kermitImg.onload = async function() {
         kermitImg.style.display = 'block';
-        statusText.textContent = 'Generating creator lore...';
+        statusText.textContent = 'Generating surreal creator lore...';
         statusText.style.display = 'block';
         bioText.textContent = '';
 
         try {
-          const textUrl = `https://text.pollinations.ai/${encodeURIComponent(aiPromptText)}`;
-          const response = await fetch(textUrl);
-          const storyData = await response.text();
+          // Free open-access text endpoint via HuggingFace Qwen/Llama pipeline
+          const response = await fetch("https://router.huggingface.co/hf-inference/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model: "Qwen/Qwen2.5-Coder-32B-Instruct",
+              messages: [
+                { role: "system", content: "You are a creative writer who writes brief, deeply surreal, and funny lore paragraphs for internet video channels." },
+                { role: "user", content: aiPromptText }
+              ],
+              max_tokens: 150,
+              temperature: 0.9
+            })
+          });
+
+          if (!response.ok) throw new Error('Generation failed');
+
+          const data = await response.json();
+          const generatedLore = data.choices[0].message.content.trim();
 
           statusText.style.display = 'none';
-          bioText.textContent = storyData;
+          bioText.textContent = generatedLore;
           bioText.style.display = 'block';
         } catch (err) {
-          statusText.style.display = 'none';
-          bioText.textContent = `World King Kermit issued his decree: "${selectedDecreeText}".`;
-          bioText.style.display = 'block';
+          // Alternative free endpoint fallback if HF router throttles
+          try {
+            const altRes = await fetch(`https://text.pollinations.ai/?prompt=${encodeURIComponent(aiPromptText)}&model=mistral`);
+            const altText = await altRes.text();
+            
+            statusText.style.display = 'none';
+            bioText.textContent = altText;
+            bioText.style.display = 'block';
+          } catch (e) {
+            statusText.style.display = 'none';
+            bioText.textContent = 'The cosmic wires crossed—unable to summon the lore right now.';
+            bioText.style.display = 'block';
+          }
         }
 
         resetBtn.style.display = 'block';
