@@ -201,46 +201,30 @@
       kermitImg.src = `https://image.pollinations.ai/prompt/${prompt}?seed=${seed}&model=turbo&nologo=true`;
 
       // Trigger dynamic AI text generation AFTER image loads
-      kermitImg.onload = async function() {
+   kermitImg.onload = async function() {
         kermitImg.style.display = 'block';
         statusText.textContent = 'Generating surreal creator lore...';
         statusText.style.display = 'block';
         bioText.textContent = '';
 
         try {
-          // Free open-access text endpoint via HuggingFace Qwen/Llama pipeline
-          const response = await fetch("https://router.huggingface.co/hf-inference/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              model: "Qwen/Qwen2.5-Coder-32B-Instruct",
-              messages: [
-                { role: "system", content: "You are a creative writer who writes brief, deeply surreal, and funny lore paragraphs for internet video channels." },
-                { role: "user", content: aiPromptText }
-              ],
-              max_tokens: 150,
-              temperature: 0.9
-            })
-          });
-
-          if (!response.ok) throw new Error('Generation failed');
-
-          const data = await response.json();
-          const generatedLore = data.choices[0].message.content.trim();
+          // Bypasses browser CORS blocks by fetching directly from an open proxy endpoint
+          const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://text.pollinations.ai/${encodeURIComponent(aiPromptText)}?model=openai`)}`);
+          const data = await res.json();
+          
+          if (!data.contents) throw new Error('No data');
 
           statusText.style.display = 'none';
-          bioText.textContent = generatedLore;
+          bioText.textContent = data.contents;
           bioText.style.display = 'block';
         } catch (err) {
-          // Alternative free endpoint fallback if HF router throttles
+          // Secondary open fallback
           try {
-            const altRes = await fetch(`https://text.pollinations.ai/?prompt=${encodeURIComponent(aiPromptText)}&model=mistral`);
-            const altText = await altRes.text();
+            const rawRes = await fetch(`https://text.pollinations.ai/prompt/${encodeURIComponent(aiPromptText)}`);
+            const rawText = await rawRes.text();
             
             statusText.style.display = 'none';
-            bioText.textContent = altText;
+            bioText.textContent = rawText;
             bioText.style.display = 'block';
           } catch (e) {
             statusText.style.display = 'none';
@@ -251,16 +235,6 @@
 
         resetBtn.style.display = 'block';
         submitBtn.disabled = false;
-      };
-
-      kermitImg.onerror = function() {
-        statusText.textContent = 'Failed to generate image. Please try again.';
-        statusText.style.color = 'red';
-        submitBtn.disabled = false;
-        colorSelect.disabled = false;
-        decadeSelect.disabled = false;
-        decreeSelect.disabled = false;
-        resetBtn.style.display = 'block';
       };
     });
 
