@@ -195,10 +195,13 @@
       kermitImg.style.display = 'none';
       bioText.style.display = 'none';
 
-      // Build the prompt dynamically
+      // Build the IMAGE prompt dynamically
       const promptText = `Generate an image of Kermit the Frog with ${selectedColor} color skin, ${decadeFeature}`;
       const prompt = encodeURIComponent(promptText);
       const seed = Math.floor(Math.random() * 100000);
+
+      // Build the TEXT story prompt dynamically for your AI pipeline
+      const aiPromptText = `Write a deeply surreal paragraph about Kermit the Frog becoming World King, whose very first decree was to: "${selectedDecree}".`;
       
       // Request using turbo model for speed
       kermitImg.src = '';
