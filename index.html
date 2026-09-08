@@ -203,7 +203,7 @@
       statusText.textContent = 'Generating surreal creator lore...';
 
       // Dynamic text prompt using all 3 inputs + a random seed for unique stories
-      const aiPromptText = `Write a deeply surreal, weird, short story (under 35 words) about a ${selectedColor}-skinned Kermit the Frog from the ${selectedDecade} who became World King and decreed to: "${selectedDecreeText}".`;
+      const aiPromptText = `Write a senseless biography (around a paragraph long) about a ${selectedColor}-skinned Kermit the Frog. It must thematically involve "${selectedDecreeText}".`;
       const encodedTextPrompt = encodeURIComponent(aiPromptText);
       const textSeed = Math.floor(Math.random() * 999999);
 
